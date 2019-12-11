@@ -12,7 +12,7 @@ __version__ = '1.0.0'
 
 
 def time():
-    return datetime.strftime(datetime.now(), '%H:%M:%S %d.%m.%y')
+    return datetime.strftime(datetime.now(), '%H:%M:%S %d-%m-%y')
 
 
 def name_id(user_id):
@@ -52,7 +52,7 @@ def new_message(event):
             with open(NAME_USERS_FILE, 'a') as file:
                 print(str(user), file=file)
 
-            print(time(), name_id(user), '(ID:%s) подписан на рассылку'%str(user), file=LOG_FILE)
+            print(time(), '$ Подписка на рассылку\nПользователь:', name_id(user), '(ID:%s)' % str(user), file=LOG_FILE)
             return write_msg('Вы подписались на рассылку, для отписки напишите "-"', user)
 
         else:
@@ -66,7 +66,7 @@ def new_message(event):
             with open(NAME_USERS_FILE, 'w') as file:
                 file.write(text.replace(str(user) + ' ', ''))
 
-            print(time(), name_id(user), '(ID:%s) отписан от рассылки'%str(user), file=LOG_FILE)
+            print(time(), '$ Отписка от рассылки\nПользователь:', name_id(user), '(ID:%s)' % str(user), file=LOG_FILE)
             return write_msg('Вы отписались от рассылки', user)
 
         else:
@@ -104,7 +104,8 @@ if __name__ == '__main__':
     for event in longpoll.listen():
         if event.type == VkEventType.MESSAGE_NEW and event.to_me:
             print('_'*20+'\n# Новое сообщение. ID:', str(event.user_id), file=LOG_FILE)
+            print('Пользователь:', name_id(event.user_id))
             print(time(), 'Сообщение:\n'+event.text, file=LOG_FILE)
-            print('!__ Ответ бота:\n', new_message(event), file=LOG_FILE)
+            print('_# Ответ бота:\n', new_message(event), file=LOG_FILE)
 
 # Creator KAMIKADZ4
