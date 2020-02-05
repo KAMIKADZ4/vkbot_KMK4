@@ -3,12 +3,23 @@ from vk_api import VkApi
 from vk_api.longpoll import VkLongPoll, VkEventType
 from random import randint
 from datetime import datetime
-from config_KMK4 import (TOKEN, MODERS, KEYBOARD,
-                         START_MSG, NAME_USERS_FILE,
-                         COMMANDS, ACTIVE_COMMANDS, LOG_FILE)
+from json import load
+from configparser import ConfigParser
 
 __author__ = 'KAMIKADZ4'
-__version__ = '1.0.0'
+__version__ = '1.0.1'
+
+config = ConfigParser()
+config.read('config_KMK4.ini')
+TOKEN = config['token']
+MODERS = list(map(int, config['moders'].split()))
+START_MSG = config['start_msg']
+NAME_USERS_FILE = config['name_users_file']
+LOG_FILE = config['log_file']
+
+with open(config['keyboard_file'], 'r', encoding='utf-8') as file:
+    KEYBOARD = load(file)
+    COMMANDS = list(KEYBOARD.keys())
 
 
 def time():
@@ -31,8 +42,8 @@ def write_msg(message, user_id, keyboard=None, user_ids=None):
 
 def send(message, user_id):
     print('@', time(), 'Запущена рассылка.\nСообщение:', message, file=LOG_FILE)
-    with open(NAME_USERS_FILE) as file:
-        users_id = list(map(int, file.read().split()))
+    with open(NAME_USERS_FILE) as open_file:
+        users_id = list(map(int, open_file.read().split()))
     for usr in range(0, len(users_id), 100):
         write_msg(message, None, user_ids=users_id[usr: usr + 100])
 
@@ -45,35 +56,39 @@ def new_message(event):
     user = event.user_id
 
     if text == '+':
-        with open(NAME_USERS_FILE, 'r') as file:
-            user_list = file.read().split()
+        with open(NAME_USERS_FILE, 'r') as open_file:
+            user_list = open_file.read().split()
 
         if str(user) not in user_list:
-            with open(NAME_USERS_FILE, 'a') as file:
-                print(str(user), file=file)
+            with open(NAME_USERS_FILE, 'a') as open_file:
+                print(str(user), file=open_file)
 
-            print(time(), '$ Подписка на рассылку\nПользователь:', name_id(user), '(ID:%s)' % str(user), file=LOG_FILE)
+            print(time(), '$ Подписка на рассылку\nПользователь:', name_id(user),
+                                                                   '(ID:%s)' % str(user),
+                                                                   file=LOG_FILE)
             return write_msg('Вы подписались на рассылку, для отписки напишите "-"', user)
 
         else:
             return write_msg('Вы уже подписаны на рассылку, для отписки напишите "-"', user)
 
     elif text == '-':
-        with open(NAME_USERS_FILE, 'r') as file:
-            user_list = file.read()
+        with open(NAME_USERS_FILE, 'r') as open_file:
+            user_list = open_file.read()
 
         if str(user) in user_list:
-            with open(NAME_USERS_FILE, 'w') as file:
-                file.write(text.replace(str(user) + ' ', ''))
+            with open(NAME_USERS_FILE, 'w') as open_file:
+                open_file.write(text.replace(str(user) + ' ', ''))
 
-            print(time(), '$ Отписка от рассылки\nПользователь:', name_id(user), '(ID:%s)' % str(user), file=LOG_FILE)
+            print(time(), '$ Отписка от рассылки\nПользователь:', name_id(user),
+                                                                  '(ID:%s)' % str(user),
+                                                                  file=LOG_FILE)
             return write_msg('Вы отписались от рассылки', user)
 
         else:
             return write_msg('Вы уже отписаны от рассылки, для подписки напишите "+"', user)
 
-    elif text.lower() in ACTIVE_COMMANDS:
-        return write_msg(COMMANDS[text.lower()], user)
+    elif text in COMMANDS:
+        return write_msg(KEYBOARD[text], user)
 
     elif text.lower() in ['ку', 'хай', 'привет', 'салам', 'шалом', 'салам алейкум', 'начать']:
         return write_msg(START_MSG, user, keyboard=KEYBOARD)
