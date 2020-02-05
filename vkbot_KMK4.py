@@ -11,13 +11,14 @@ __version__ = '1.0.1'
 
 config = ConfigParser()
 config.read('config_KMK4.ini')
-TOKEN = config['token']
-MODERS = list(map(int, config['moders'].split()))
-START_MSG = config['start_msg']
-NAME_USERS_FILE = config['name_users_file']
-LOG_FILE = config['log_file']
+TOKEN = config['settings']['token']
+MODERS = list(map(int, config['settings']['moders'].split()))
+START_MSG = config['settings']['start_msg']
+NAME_USERS_FILE = config['settings']['name_users_file']
+LOG_FILE = open(config['settings']['log_file'])
 
-with open(config['keyboard_file'], 'r', encoding='utf-8') as file:
+with open(config['settings']['keyboard_file'],
+          'r', encoding='utf-8') as file:
     KEYBOARD = load(file)
     COMMANDS = list(KEYBOARD.keys())
 
